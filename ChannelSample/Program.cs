@@ -12,6 +12,7 @@ namespace ChannelSample
             Console.WriteLine("1. Single producer, single consumer");
             Console.WriteLine("2. Multiple producers, single consumer");
             Console.WriteLine("3. Single producer, multiple consumers");
+            Console.WriteLine("4. Bounded => Single producer, multiple consumers");
 
             var key = Console.ReadKey();
 
@@ -29,6 +30,9 @@ namespace ChannelSample
                     await SingleProduceMultipleConsumers();
                     break;
 
+                case '4':
+                    await SingleProduceMultipleConsumersBounded();
+                    break;
                 default:
                     Console.WriteLine("That was an invalid choice!");
                     break;
@@ -97,6 +101,30 @@ namespace ChannelSample
 
             await Task.WhenAll(consumerTask1, consumerTask2, consumerTask3);
         }
+
+        public static async Task SingleProduceMultipleConsumersBounded(int max=100000)
+        {
+            var op = new BoundedChannelOptions(max){ SingleWriter = true };
+            var channel = Channel.CreateBounded<string>(op);
+
+            // In this example, multiple consumers are needed to keep up with a fast producer
+
+            var producer1 = new Producer(channel.Writer, 1, 10);
+            var consumer1 = new Consumer(channel.Reader, 1, 50000);
+            var consumer2 = new Consumer(channel.Reader, 2, 10000);
+            var consumer3 = new Consumer(channel.Reader, 3, 150000);
+
+            Task consumerTask1 = consumer1.ConsumeData(); // begin consuming
+            Task consumerTask2 = consumer2.ConsumeData(); // begin consuming
+            Task consumerTask3 = consumer3.ConsumeData(); // begin consuming
+
+            Task producerTask1 = producer1.BeginProducing();
+
+            await producerTask1.ContinueWith(_ => channel.Writer.Complete());
+
+            await Task.WhenAll(consumerTask1, consumerTask2, consumerTask3);
+        }
+
     }
 
     internal class Producer
@@ -112,11 +140,11 @@ namespace ChannelSample
             _delay = delay;
         }
 
-        public async Task BeginProducing()
+        public async Task BeginProducing(int max=200000)
         {
             Console.WriteLine($"PRODUCER ({_identifier}): Starting");
 
-            for (var i = 0; i < 10; i++)
+            for (var i = 0; i < max; i++)
             {
                 await Task.Delay(_delay); // simulate producer building/fetching some data
 
