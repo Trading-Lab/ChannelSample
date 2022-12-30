@@ -9,4 +9,6 @@ creates a channel with an unlimited capacity. This can be quite dangerous if you
 ## CreateBounded<T> 
 creates a channel with a finite capacity. In this scenario, it’s possible to develop a producer/consumer pattern which accommodates this limit. For example, you can have your producer await (non-blocking) capacity within the channel before it completes its write operation. This is a form of backpressure, which, when used, can slow your producer down, or even stop it, until the consumer has read some items and created capacity.
 
-We won’t cover these producer/consumer patterns in this post, so I’m going to use a single unbounded channel in my sample. For real-world applications, I recommend sticking to bounded channels. (from https://www.stevejgordon.co.uk/an-introduction-to-system-threading-channels)
+We won’t cover these producer/consumer patterns in this post, so I’m going to use a single unbounded channel in my sample. 
+**For real-world applications, I recommend sticking to bounded channels**.
+(from https://www.stevejgordon.co.uk/an-introduction-to-system-threading-channels)
