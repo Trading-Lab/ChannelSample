@@ -120,7 +120,7 @@ namespace ChannelSample
             {
                 await Task.Delay(_delay); // simulate producer building/fetching some data
 
-                var msg = $"P{_identifier} - {DateTime.UtcNow:G}";
+                var msg = $"P{_identifier} - {DateTime.UtcNow:yyyy-MM-dd hh:mm:ss.fff}";
 
                 Console.WriteLine($"PRODUCER ({_identifier}): Creating {msg}");
 
